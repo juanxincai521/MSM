@@ -1,0 +1,6 @@
+#
+# Makefile for the LGE board
+#
+# FX1(FX1E/FX1A/FX1T/FX1S/FX1V/FX1SU/FX1SK)
+obj-$(CONFIG_MACH_MSM8960_FX1) += fx1/
+

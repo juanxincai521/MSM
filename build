@@ -1,0 +1,31 @@
+#!/bin/bash
+cpus=$(grep "^processor" /proc/cpuinfo | wc -l)
+make mrproper -j4
+
+make ARCH=arm fx1su-perf_defconfig
+ARCH=arm
+ARCH=arm CROSS_COMPILE="arm-eabi-4.6/bin/arm-eabi-" make -j4
+#ARCH=arm CROSS_COMPILE="/media/playfulgod/Android1/CM10/prebuilts/gcc/linux-x86/arm/linaro-4.7/bin/arm-eabi-"
+#ARCH=arm CROSS_COMPILE=/media/playfulgod/Android1/CM10/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi- make -j16
+
+# These move files to easier locations
+find -name '*.ko' -exec cp -av {} boot/boot/modules/ \;
+
+if [ -f arch/arm/boot/zImage ]; then
+echo
+echo "打包boot.img"
+echo
+abootimg --create boot.img  -f boot/bootimg.cfg -k arch/arm/boot/zImage -r boot/initrd.img
+mv boot.img boot/boot/
+cd boot/boot/
+./loki_tool patch boot aboot.img boot.img boot.lok
+adb push boot.lok /data/local/tmp
+adb shell
+#su
+#dd if=/data/local/tmp/boot.lok of=/dev/block/platform/msm_sdcc.1/by-name/boot
+else
+echo
+echo "未发现 zImage,　编译内核有错误"
+echo
+fi
+
